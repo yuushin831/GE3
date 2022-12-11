@@ -12,6 +12,14 @@ public://メンバ関数
 	/// 初期化
 	/// </summary>
 	void Initialize(WinApp* winApp);
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
+	void PreDraw();
+	/// <summary>
+	/// 描画後処理
+	/// </summary>
+	void PostDraw();
 
 private:
 	/// <summary>
@@ -60,4 +68,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
 	//フェンス
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+	UINT64 fenceVal = 0;
 };
