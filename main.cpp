@@ -200,6 +200,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     WinApp* winApp = nullptr;
     DirectXCommon* dxCommon = nullptr;
 
+    HRESULT result;
+
     //WindowsAPIの初期化
     winApp = new WinApp();
     winApp->Initialize();
@@ -305,7 +307,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // 頂点バッファの生成
     ComPtr<ID3D12Resource> vertBuff;
-    result = device->CreateCommittedResource(
+    result = dxCommon->GetDevice()->CreateCommittedResource(
         &heapProp, // ヒープ設定
         D3D12_HEAP_FLAG_NONE,
         &resDesc, // リソース設定
@@ -328,7 +330,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     // インデックスバッファの生成
     ComPtr<ID3D12Resource> indexBuff;
-    result = device->CreateCommittedResource(
+    result = dxCommon->GetDevice()->CreateCommittedResource(
         &heapProp, // ヒープ設定
         D3D12_HEAP_FLAG_NONE,
         &resDesc, // リソース設定
@@ -540,14 +542,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ID3DBlob* rootSigBlob = nullptr;
     result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
     assert(SUCCEEDED(result));
-    result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+    result = dxCommon->GetDevice()->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
     assert(SUCCEEDED(result));
     rootSigBlob->Release();
     // パイプラインにルートシグネチャをセット
     pipelineDesc.pRootSignature = rootSignature.Get();
     // パイプランステートの生成
     ComPtr<ID3D12PipelineState> pipelineState;
-    result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
+    result = dxCommon->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
     assert(SUCCEEDED(result));
 
 #pragma endregion
@@ -562,7 +564,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // 配列内の全オブジェクトに対して
     for (int i = 0; i < _countof(object3ds); i++) {
         // 初期化
-        InitializeObject3d(&object3ds[i], device.Get());
+        InitializeObject3d(&object3ds[i], dxCommon->GetDevice());
 
         // ここから↓は親子構造のサンプル
         // 先頭以外なら
@@ -595,7 +597,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     cbResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     ComPtr<ID3D12Resource> constBuffMaterial;
     // 定数バッファの生成
-    result = device->CreateCommittedResource(
+    result = dxCommon->GetDevice()->CreateCommittedResource(
         &cbHeapProp, // ヒープ設定
         D3D12_HEAP_FLAG_NONE,
         &cbResourceDesc, // リソース設定
@@ -639,7 +641,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     TexMetadata metadata1 = scratchImg1.GetMetadata();
     metadata1.format = MakeSRGB(metadata1.format);
 
-    ComPtr<ID3D12Resource> texBuff1 = CreateTexture(device.Get(), metadata1);
+    ComPtr<ID3D12Resource> texBuff1 = CreateTexture(dxCommon->GetDevice(), metadata1);
     UploadSubresources(texBuff1.Get(), scratchImg1);
 
     // 2枚目のテクスチャ
@@ -649,7 +651,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     TexMetadata metadata2 = scratchImg2.GetMetadata();
     metadata2.format = MakeSRGB(metadata2.format);
 
-    ComPtr<ID3D12Resource> texBuff2 = CreateTexture(device.Get(), metadata2);
+    ComPtr<ID3D12Resource> texBuff2 = CreateTexture(dxCommon->GetDevice(), metadata2);
     UploadSubresources(texBuff2.Get(), scratchImg2);
 
     // SRVの最大個数
@@ -661,7 +663,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     srvHeapDesc.NumDescriptors = kMaxSRVCount;
     // 設定を元にSRV用デスクリプタヒープを生成
     ComPtr<ID3D12DescriptorHeap> srvHeap;
-    result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
+    result = dxCommon->GetDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
     assert(SUCCEEDED(result));
 
     //SRVヒープの先頭ハンドルを取得
@@ -675,13 +677,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     srvDesc.Texture2D.MipLevels = UINT(metadata1.mipLevels);
 
     // ハンドルの指す位置にシェーダーリソースビュー作成
-    device->CreateShaderResourceView(texBuff1.Get(), &srvDesc, srvHandle);
+    dxCommon->GetDevice()->CreateShaderResourceView(texBuff1.Get(), &srvDesc, srvHandle);
 
     // 2枚目のシェーダーリソースビューを作成。1枚目のディスクリプタハンドルの次の場所に配置する
-    size_t incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    size_t incrementSize = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     srvHandle.ptr += incrementSize;
     srvDesc.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-    device->CreateShaderResourceView(texBuff2.Get(), &srvDesc, srvHandle);
+    dxCommon->GetDevice()->CreateShaderResourceView(texBuff2.Get(), &srvDesc, srvHandle);
 
     size_t textureIndex = 0;
    
@@ -742,30 +744,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         dxCommon->PreDraw();
        
         // プリミティブ形状の設定コマンド
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
+        dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
         // パイプラインステートとルートシグネチャの設定コマンド
-        commandList->SetPipelineState(pipelineState.Get());
-        commandList->SetGraphicsRootSignature(rootSignature.Get());
+        dxCommon->GetCommandList()->SetPipelineState(pipelineState.Get());
+        dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
         // 頂点バッファビューの設定コマンド
-        commandList->IASetVertexBuffers(0, 1, &vbView);
+        dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
         // インデックスバッファビューの設定コマンド
-        commandList->IASetIndexBuffer(&ibView);
+        dxCommon->GetCommandList()->IASetIndexBuffer(&ibView);
         // 定数バッファビュー(CBV)の設定コマンド
-        commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
+        dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
         // SRVヒープの設定コマンド
         ID3D12DescriptorHeap* descHeaps[] = {srvHeap.Get()};
-        commandList->SetDescriptorHeaps(1, descHeaps);
+        dxCommon->GetCommandList()->SetDescriptorHeaps(1, descHeaps);
         // SRVヒープの先頭ハンドルを取得（SRVを指しているはず）
         D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
-        srvGpuHandle.ptr += textureIndex * device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        srvGpuHandle.ptr += textureIndex * dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         // SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
-        commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
+        dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 
         // 全オブジェクトについて処理
         for (int i = 0; i < _countof(object3ds); i++)
         {
-            DrawObject3d(&object3ds[i], commandList.Get(), vbView, ibView, _countof(indices));
+            DrawObject3d(&object3ds[i], dxCommon->GetCommandList(), vbView, ibView, _countof(indices));
         }
 
         // ４．描画コマンドここまで

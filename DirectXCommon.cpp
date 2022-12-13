@@ -14,6 +14,33 @@ void DirectXCommon::Initialize(WinApp* winApp)
     assert(winApp);
     //メンバ変数に記録
     this->winApp = winApp;
+    
+    /// <summary>
+    /// デバイス初期化
+    /// </summary>
+    InitializeDevice();
+    /// <summary>
+    /// コマンド関連の初期化
+    /// </summary>
+    InitializeCommon();
+    /// <summary>
+    /// スワップチェーンの初期化
+    /// </summary>
+    InitializeSwapchain();
+    /// <summary>
+    /// レンダーターゲットビューの初期化
+    /// </summary>
+    InitializeRenderTargetView();
+    /// <summary>
+    /// 深度バッファの初期化
+    /// </summary>
+    InitializeDepthBuffer();
+    /// <summary>
+    /// フェンスの初期化
+    /// </summary>
+    InitializeFence();
+
+    
 
     // DirectX初期化処理　ここから
     HRESULT result;
