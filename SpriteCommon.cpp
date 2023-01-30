@@ -2,6 +2,7 @@
 
 #include<d3dcompiler.h>
 #include<cassert>
+#include<string>
 
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -25,7 +26,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 
 	//読み込み
 	result = D3DCompileFromFile(
-		L"Resources/shaders/SpriteVS.hlal",
+		L"Resources/shaders/SpriteVS.hlsl",
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"main", "vs_5_0",
@@ -33,23 +34,23 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		0,
 		&vsBlob, &errorBlob);
 
-	//if (FAILED(result))
-	//{
+	if (FAILED(result))
+	{
 
-	//	std::string error;
-	//	error.resize(errorBlob->GetBufferSize());
+		std::string error;
+		error.resize(errorBlob->GetBufferSize());
 
-	//	std::copy_n((char*)errorBlob->GetBufferPointer(),
-	//		errorBlob->GetBufferSize(),
-	//		error.begin());
-	//	error += "\n";
-	//	OutputDebugStringA(error.c_str());
-	//	assert(0);
-	//}
+		std::copy_n((char*)errorBlob->GetBufferPointer(),
+			errorBlob->GetBufferSize(),
+			error.begin());
+		error += "\n";
+		OutputDebugStringA(error.c_str());
+		assert(0);
+	}
 
 	//読み込み
 	result = D3DCompileFromFile(
-		L"Resources/shaders/SpritePS.hlal",
+		L"Resources/shaders/SpritePS.hlsl",
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"main", "ps_5_0",
@@ -58,19 +59,19 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		&psBlob, &errorBlob);
 
 
-	//if (FAILED(result))
-	//{
+	if (FAILED(result))
+	{
 
-	//	std::string error;
-	//	error.resize(errorBlob->GetBufferSize());
+		std::string error;
+		error.resize(errorBlob->GetBufferSize());
 
-	//	std::copy_n((char*)errorBlob->GetBufferPointer(),
-	//		errorBlob->GetBufferSize(),
-	//		error.begin());
-	//	error += "\n";
-	//	OutputDebugStringA(error.c_str());
-	//	assert(0);
-	//}
+		std::copy_n((char*)errorBlob->GetBufferPointer(),
+			errorBlob->GetBufferSize(),
+			error.begin());
+		error += "\n";
+		OutputDebugStringA(error.c_str());
+		assert(0);
+	}
 	
 	//レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
@@ -105,7 +106,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	pipelineDesc.SampleDesc.Count = 1;
 	//ルートシグネチャ
-	ID3D12RootSignature* rootSignature;
+	
 	//ルートシグネチャの設定
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -119,9 +120,9 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	assert(SUCCEEDED(result));
 	rootSigBlob->Release();
 	//パイプラインにルートシグネチャをセット
-	pipelineDesc.pRootSignature = rootSignature;//.Get()
+	pipelineDesc.pRootSignature = rootSignature.Get();
 	//パイプラインステートの生成
-	ID3D12PipelineState* pipelineState = nullptr;
+	
 	result = dxCommon->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 }
