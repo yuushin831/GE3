@@ -1,0 +1,10 @@
+﻿  compilation object save succeeded; see C:\Users\ko21g\Desktop\二年次\後期\GE3\Git\x64\Debug\SpritePS.cso
+  compilation object save succeeded; see C:\Users\ko21g\Desktop\二年次\後期\GE3\Git\x64\Debug\SpriteVS.cso
+  DirectXCommon.cpp
+  Input.cpp
+  main.cpp
+  Sprite.cpp
+  SpriteCommon.cpp
+  WinApp.cpp
+C:\Users\ko21g\Desktop\二年次\後期\GE3\Git\DirectXCommon.cpp(50,13): warning C4101: 'result': ローカル変数は 1 度も使われていません。
+  DirectXGame.vcxproj -> C:\Users\ko21g\Desktop\二年次\後期\GE3\Git\x64\Debug\DirectXGame.exe
