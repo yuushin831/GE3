@@ -130,7 +130,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	//ルートシグネチャの設定
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	rootSignatureDesc.pParameters - &rootParam;
+	rootSignatureDesc.pParameters = &rootParam;
 	rootSignatureDesc.NumParameters = 1;
 	//ルートシグネチャのシリアライズ
 	ID3D10Blob* rootSigBlob = nullptr;

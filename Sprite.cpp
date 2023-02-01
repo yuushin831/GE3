@@ -67,7 +67,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	//ÉäÉ\Å[ÉXê›íË
 	D3D12_RESOURCE_DESC cbResourceDesc{};
 	cbResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	cbResourceDesc.Width - (sizeof(ConstBuffDataMaterial) + 0xff) & ~0xff;
+	cbResourceDesc.Width = (sizeof(ConstBuffDataMaterial) + 0xff) & ~0xff;
 	cbResourceDesc.Height = 1;
 	cbResourceDesc.DepthOrArraySize = 1;
 	cbResourceDesc.MipLevels = 1;
