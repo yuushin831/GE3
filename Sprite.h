@@ -11,6 +11,11 @@ private:
 
 		DirectX::XMFLOAT4 color;//色(RGBA)
 	};
+
+	struct Vertex {
+		DirectX::XMFLOAT3 pos;//xyz座標
+		DirectX::XMFLOAT2 uv; //uv座標
+	};
 public://メンバ関数
 	//初期化
 	void Initialize(SpriteCommon*_spriteCommon);
