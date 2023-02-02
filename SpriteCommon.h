@@ -10,12 +10,6 @@
 class SpriteCommon
 {
 public:
-	//縦方向ピクセル数
-	const size_t textureWidth = 256;
-	//横方向ピクセル数
-	const size_t textureHeight = 256;
-	//配列の要素数
-	const size_t imageDataCount = textureWidth + textureHeight;
 	//画像イメージデータ配列
 	
 	//全ピクセルの色を初期化

@@ -20,7 +20,15 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	assert(_dxCommon);
 	dxCommon = _dxCommon;
 
-	XMFLOAT4* imageData = new XMFLOAT4[imageDataCount]; 0;
+	//縦方向ピクセル数
+	const size_t textureWidth = 256;
+	//横方向ピクセル数
+	const size_t textureHeight = 256;
+	//配列の要素数
+	const size_t imageDataCount = textureWidth * textureHeight;
+
+
+	XMFLOAT4* imageData = new XMFLOAT4[imageDataCount];
 	for (size_t i = 0; i < imageDataCount; i++)
 	{
 		imageData[i].x = 1.0f;   //R
@@ -77,6 +85,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	srvDesc.Shader4ComponentMapping =
 		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
 	dxCommon->GetDevice()->CreateShaderResourceView(texBuff.Get(), &srvDesc, srvHandle);
