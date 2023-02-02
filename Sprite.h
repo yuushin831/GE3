@@ -7,9 +7,17 @@
 class Sprite
 {
 private:
+	const int  window_width = 1280;
+	const int window_height = 720;
+
 	struct ConstBuffDataMaterial {
 
 		DirectX::XMFLOAT4 color;//êF(RGBA)
+	};
+
+	struct ConstBufferDataTransform
+	{
+		DirectX::XMMATRIX mat;
 	};
 
 	struct Vertex {
@@ -42,6 +50,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffMaterial;
 	ConstBuffDataMaterial *constMapMaterial = nullptr;
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffTransform;
+	ConstBufferDataTransform* constMapTransform=nullptr;
 
 };
 

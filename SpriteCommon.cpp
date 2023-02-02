@@ -215,7 +215,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	//ルートパラメータの設定
-	D3D12_ROOT_PARAMETER rootParams[2] = {};
+	D3D12_ROOT_PARAMETER rootParams[3] = {};
 	rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//定数バッファビュー
 	rootParams[0].Descriptor.ShaderRegister = 0;//定数バッファ番号
 	rootParams[0].Descriptor.RegisterSpace = 0;//デフォルト値
@@ -225,6 +225,12 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	rootParams[1].DescriptorTable.pDescriptorRanges = &descriptorRange;
 	rootParams[1].DescriptorTable.NumDescriptorRanges = 1;
 	rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//定数バッファビュー
+	rootParams[2].Descriptor.ShaderRegister = 1;//定数バッファ番号
+	rootParams[2].Descriptor.RegisterSpace = 0;//デフォルト値
+	rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;//全てのシェーダから見える
+
 
 	// テクスチャサンプラーの設定
 	D3D12_STATIC_SAMPLER_DESC samplerDesc{};
