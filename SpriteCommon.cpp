@@ -25,7 +25,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	ScratchImage scratchImage{};
 	//WICテクスチャん０ロード
 	result = LoadFromWICFile(
-		L"Resources/mario.jpg",
+		L"Resources/texture.png",
 		WIC_FLAGS_NONE,
 		&metadata, scratchImage);
 	assert(SUCCEEDED(result));
@@ -167,7 +167,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
 		},
 		{
-		"TEXCOORD",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+		"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
 		},
 	};
 

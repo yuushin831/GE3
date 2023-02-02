@@ -8,15 +8,6 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	HRESULT result{};
 	assert(_spriteCommon);
 	spriteCommon = _spriteCommon;
-	
-
-	//頂点データ
-	Vertex vertices[] = {
-	{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},//左下
-	{{-0.5f,+0.5f,0.0f},{0.0f,0.0f}},//左上
-	{{+0.5f,-0.5f,0.0f},{1.0f,1.0f}},//右下
-	{{+0.5f,+0.5f,0.0f},{1.0f,0.0f}},//右下
-	};
 
 	//頂点データ
 	UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
@@ -103,5 +94,5 @@ void Sprite::Draw()
 
 	spriteCommon->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
 
-	spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(4, 1, 0, 0);
+	spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(_countof(vertices), 1, 0, 0);
 }
