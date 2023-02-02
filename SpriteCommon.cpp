@@ -3,6 +3,7 @@
 #include<d3dcompiler.h>
 #include<cassert>
 #include<string>
+#include<DirectXTex.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -20,35 +21,44 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	assert(_dxCommon);
 	dxCommon = _dxCommon;
 
-	//縦方向ピクセル数
-	const size_t textureWidth = 256;
-	//横方向ピクセル数
-	const size_t textureHeight = 256;
-	//配列の要素数
-	const size_t imageDataCount = textureWidth * textureHeight;
+	TexMetadata metadata{};
+	ScratchImage scratchImage{};
+	//WICテクスチャん０ロード
+	result = LoadFromWICFile(
+		L"Resources/mario.jpg",
+		WIC_FLAGS_NONE,
+		&metadata, scratchImage);
+	assert(SUCCEEDED(result));
 
-
-	XMFLOAT4* imageData = new XMFLOAT4[imageDataCount];
-	for (size_t i = 0; i < imageDataCount; i++)
-	{
-		imageData[i].x = 1.0f;   //R
-		imageData[i].y = 0.0f;   //G
-		imageData[i].z = 0.0f;   //B
-		imageData[i].w = 1.0f;   //A
+	ScratchImage mipChain{};
+	//みっぷマップ生成
+	result = GenerateMipMaps(
+		scratchImage.GetImages(),
+		scratchImage.GetImageCount(),
+		scratchImage.GetMetadata(),
+		TEX_FILTER_DEFAULT, 0, mipChain
+	);
+	if (SUCCEEDED(result)) {
+		scratchImage = std::move(mipChain);
+		metadata = scratchImage.GetMetadata();
 	}
+
+	metadata.format = MakeSRGB(metadata.format);
+
+
 	D3D12_HEAP_PROPERTIES textureHeapProp{};
 	textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
-	textureHeapProp.CPUPageProperty =
-		D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+	textureHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
 	textureHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 
+	//リソース設定
 	D3D12_RESOURCE_DESC textureResourceDesc{};
-	textureResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	textureResourceDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	textureResourceDesc.Width = textureWidth;
-	textureResourceDesc.Height = (UINT)textureHeight;
-	textureResourceDesc.DepthOrArraySize = 1;
-	textureResourceDesc.MipLevels = 1;
+	textureResourceDesc.Dimension =D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureResourceDesc.Format = metadata.format;
+	textureResourceDesc.Width = metadata.width;
+	textureResourceDesc.Height = (UINT)metadata.height;
+	textureResourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
+	textureResourceDesc.MipLevels = (UINT16)metadata.mipLevels;
 	textureResourceDesc.SampleDesc.Count = 1;
 
 	result = dxCommon->GetDevice()->CreateCommittedResource(
@@ -59,18 +69,25 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		nullptr,
 		IID_PPV_ARGS(&texBuff));
 
-	result = texBuff->WriteToSubresource(
-		0,
-		nullptr,
-		imageData,
-		sizeof(XMFLOAT4) * (UINT)textureWidth,
-		sizeof(XMFLOAT4) * (UINT)imageDataCount
-	);
+	//全みっぷマップ
+	for (size_t i = 0; i < metadata.mipLevels; i++)
+	{
+		//みっぷマップレベルを指定してイメージを取得
+		const  Image* img = scratchImage.GetImage(i, 0, 0);
+		//テクスチャバッファにデータ転送
+		result = texBuff->WriteToSubresource(
+			(UINT)i,
+			nullptr,
+			img->pixels,
+			(UINT)img->rowPitch,
+			(UINT)img->slicePitch
+		);
+		assert(SUCCEEDED(result));
+	}
 
-
-	delete[] imageData;
 
 	const size_t kMaxSRVCount = 2056;
+
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -82,19 +99,18 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	srvDesc.Shader4ComponentMapping =
-		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = textureResourceDesc.Format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MipLevels = textureResourceDesc.MipLevels;
 
 	dxCommon->GetDevice()->CreateShaderResourceView(texBuff.Get(), &srvDesc, srvHandle);
 
 
 	//シェーダ
-	ComPtr<ID3DBlob>vsBlob;
-	ComPtr<ID3DBlob>psBlob;
-	ComPtr<ID3DBlob>errorBlob;
+	ID3DBlob *vsBlob;
+	ID3DBlob *psBlob;
+	ID3DBlob *errorBlob;
 
 	//読み込み
 	result = D3DCompileFromFile(
@@ -105,7 +121,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
 		&vsBlob, &errorBlob);
-	 
+
 	if (FAILED(result))
 	{
 
@@ -144,7 +160,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		OutputDebugStringA(error.c_str());
 		assert(0);
 	}
-	
+
 	//レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 		{
@@ -152,7 +168,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 		},
 		{
 		"TEXCOORD",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
-		},		
+		},
 	};
 
 	//グラフィックスパイプライン設定
@@ -191,7 +207,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	pipelineDesc.NumRenderTargets = 1;
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	pipelineDesc.SampleDesc.Count = 1;
-	
+
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
 	descriptorRange.NumDescriptors = 1;
 	descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -224,7 +240,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 
 
 
-	
+
 	//ルートシグネチャの設定
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -244,11 +260,11 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	//パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature.Get();
 	//パイプラインステートの生成
-	
+
 	result = dxCommon->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 
-	
+
 }
 
 void SpriteCommon::PreDraw()
@@ -258,10 +274,10 @@ void SpriteCommon::PreDraw()
 	dxCommon->GetCommandList()->SetPipelineState(pipelineState.Get());
 	dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 
-	ID3D12DescriptorHeap* ppHeaps[] = {srvHeap.Get()};
+	ID3D12DescriptorHeap* ppHeaps[] = { srvHeap.Get() };
 	dxCommon->GetCommandList()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 	dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
-	
+
 }

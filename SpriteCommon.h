@@ -28,7 +28,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature>rootSignature;
 
 	//‰æ‘œ
-	DirectX::XMFLOAT4 imageData;
+	//DirectX::XMFLOAT4 imageData;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> texBuff;
 
