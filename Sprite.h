@@ -33,10 +33,10 @@ private:
 	static const int verticeCount = 4;
 	//頂点データ
 	Vertex vertices[verticeCount] = {
-	{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},//左下
-	{{-0.5f,+0.5f,0.0f},{0.0f,0.0f}},//左上
-	{{+0.5f,-0.5f,0.0f},{1.0f,1.0f}},//右下
-	{{+0.5f,+0.5f,0.0f},{1.0f,0.0f}},//右下
+	{{0.0f,100.0f,0.0f},{0.0f,1.0f}},//左下
+	{{0.0f,0.0f,0.0f},{0.0f,0.0f}},//左上
+	{{100.0f,100.0f,0.0f},{1.0f,1.0f}},//右下
+	{{100.0f,0.0f,0.0f},{1.0f,0.0f}},//右下
 	};
 
 	SpriteCommon* spriteCommon = nullptr;
