@@ -116,15 +116,66 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	result = constBuffTransform->Map(0, nullptr, (void**)&constMapTransform);//マッピング
 	assert(SUCCEEDED(result));
 
-	constMapTransform->mat = XMMatrixIdentity();
-	constMapTransform->mat.r[0].m128_f32[0] = 2.0f / window_width;
-	constMapTransform->mat.r[1].m128_f32[1] = -2.0f / window_height;
+	//ワールド
+	XMMATRIX matWoeld;
+	matWoeld = XMMatrixIdentity();
 
-	constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
-	constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
+	rotationZ = 0.f;
+	position = { 0.f,0.f,0.f };
+
+	//回転
+	XMMATRIX matRot;
+	matRot = XMMatrixIdentity();
+	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotationZ));
+	matWoeld *= matRot;
+
+	//平行移動
+	XMMATRIX matTrans;
+	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matWoeld *= matTrans;
+
+
+
+	//射影
+	XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
+		0.f, WinApp::window_width,
+		WinApp::window_height, 0.f,
+		0.0f, 1.0f
+	);
+	constMapTransform->mat = matWoeld * matProjection;
+
+	
 
 
 	
+}
+
+void Sprite::Update()
+{
+	constMapMaterial->color = color;
+
+	//ワールド
+	XMMATRIX matWoeld;
+	matWoeld = XMMatrixIdentity();
+
+	//回転
+	XMMATRIX matRot;
+	matRot = XMMatrixIdentity();
+	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotationZ));
+	matWoeld *= matRot;
+	//平行移動
+	XMMATRIX matTrans;
+	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matWoeld *= matTrans;
+
+	//射影
+	XMMATRIX matProjection = XMMatrixOrthographicOffCenterLH(
+		0.f, WinApp::window_width,
+		WinApp::window_height, 0.f,
+		0.0f, 1.0f
+	);
+	constMapTransform->mat = matWoeld * matProjection;
+
 }
 
 void Sprite::Draw()

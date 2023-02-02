@@ -7,8 +7,7 @@
 class Sprite
 {
 private:
-	const int  window_width = 1280;
-	const int window_height = 720;
+	
 
 	struct ConstBuffDataMaterial {
 
@@ -28,6 +27,8 @@ public://ƒƒ“ƒoŠÖ”
 	//‰Šú‰»
 	void Initialize(SpriteCommon*_spriteCommon);
 
+	void Update();
+
 	void Draw();
 private:
 	static const int verticeCount = 4;
@@ -42,6 +43,11 @@ private:
 	SpriteCommon* spriteCommon = nullptr;
 
 	DirectX::XMFLOAT4 color = { 1,0,0,0.5f };
+
+	float rotationZ;
+	DirectX::XMFLOAT3 position;
+
+
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertBuff;
 
