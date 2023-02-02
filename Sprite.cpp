@@ -10,7 +10,11 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	spriteCommon = _spriteCommon;
 
 
-
+	vertices[LB] = { {0.0f,size.y,0.0f},{0.0f,1.0f} };//左下
+	vertices[LT] = { {0.0f,0.0f,0.0f},{0.0f,0.0f} };//左上
+	vertices[RB] = { {size.x,size.y,0.0f},{1.0f,1.0f} };//右下
+	vertices[RT] = { {size.x,0.0f,0.0f},{1.0f,0.0f} };//右下
+	
 	//頂点データ
 	UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
 
@@ -121,7 +125,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	matWoeld = XMMatrixIdentity();
 
 	rotationZ = 0.f;
-	position = { 0.f,0.f,0.f };
+	position={ 0.f,0.f };
 
 	//回転
 	XMMATRIX matRot;
@@ -131,7 +135,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 
 	//平行移動
 	XMMATRIX matTrans;
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans = XMMatrixTranslation(position.x, position.y, 0.0f);
 	matWoeld *= matTrans;
 
 
@@ -152,6 +156,25 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 
 void Sprite::Update()
 {
+	
+	vertices[LB] = { {0.0f,size.y,0.0f},{0.0f,1.0f} };//左下
+	vertices[LT] = { {0.0f,0.0f,0.0f},{0.0f,0.0f} };//左上
+	vertices[RB] = { {size.x,size.y,0.0f},{1.0f,1.0f} };//右下
+	vertices[RT] = { {size.x,0.0f,0.0f},{1.0f,0.0f} }; // 右下
+	
+
+	//転送
+	Vertex* vertMap = nullptr;
+	HRESULT result = vertBuff->Map(0, nullptr, (void**)&vertMap);
+	assert(SUCCEEDED(result));
+	//全頂点に対して
+	for (int i = 0; i < _countof(vertices); i++) {
+		vertMap[i] = vertices[i];//座標をコピー
+	}
+	//繋がりを解除
+	vertBuff->Unmap(0, nullptr);
+
+
 	constMapMaterial->color = color;
 
 	//ワールド
@@ -165,7 +188,7 @@ void Sprite::Update()
 	matWoeld *= matRot;
 	//平行移動
 	XMMATRIX matTrans;
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans = XMMatrixTranslation(position.x, position.y, 0.0f);
 	matWoeld *= matTrans;
 
 	//射影

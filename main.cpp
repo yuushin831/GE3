@@ -36,6 +36,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Sprite* sprite = nullptr;
     sprite = new Sprite();
     sprite->Initialize(spriteCommon);
+    sprite->SetColor({ 0,1,1,1 });
 #pragma endregion 
 
 
@@ -53,6 +54,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion 
 
 #pragma region 最初のシーンの更新
+        DirectX::XMFLOAT2 pos = sprite->GetPosition();
+        //float pos = sprite->GetRotationZ();
+        pos.x += 0.1f;
+        sprite->SetPosition(pos);
         sprite->Update();
 
 #pragma endregion 
