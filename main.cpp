@@ -54,10 +54,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion 
 
 #pragma region 最初のシーンの更新
-        DirectX::XMFLOAT2 pos = sprite->GetPosition();
-        //float pos = sprite->GetRotationZ();
+       /* DirectX::XMFLOAT2 pos = sprite->GetPosition();
+        DirectX::XMFLOAT2 size = sprite->GetSize();
         pos.x += 0.1f;
+        size.y += 1.0f;
         sprite->SetPosition(pos);
+        sprite->SetSize(size);*/
         sprite->Update();
 
 #pragma endregion 

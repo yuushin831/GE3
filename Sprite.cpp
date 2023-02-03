@@ -9,11 +9,29 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	assert(_spriteCommon);
 	spriteCommon = _spriteCommon;
 
+	float left = (0.0f - anchorPoint.x) * size.x;
+	float right = (1.0f - anchorPoint.x) * size.x;
+	float top = (0.0f - anchorPoint.y) * size.y;
+	float bottom = (1.0f - anchorPoint.y) * size.y;
 
-	vertices[LB] = { {0.0f,size.y,0.0f},{0.0f,1.0f} };//左下
-	vertices[LT] = { {0.0f,0.0f,0.0f},{0.0f,0.0f} };//左上
-	vertices[RB] = { {size.x,size.y,0.0f},{1.0f,1.0f} };//右下
-	vertices[RT] = { {size.x,0.0f,0.0f},{1.0f,0.0f} };//右下
+	//左右反転
+	if (IsFlipX)
+	{
+		left = -left;
+		right = -right;
+	}
+	//上下反転
+	if (IsFlipY)
+	{
+		top = -top;
+		bottom = -bottom;
+	}
+
+
+	vertices[LB] = { {left,bottom,0.0f}, {0.0f,1.0f} };//左下
+	vertices[LT] = { {left,top,0.0f},    {0.0f,0.0f} };//左上
+	vertices[RB] = { {right,bottom,0.0f},{1.0f,1.0f} };//右下
+	vertices[RT] = { {right,top,0.0f},   {1.0f,0.0f} };//右下
 	
 	//頂点データ
 	UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
@@ -31,7 +49,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	resDesc.SampleDesc.Count = 1;
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	//頂点バッファの生成
-	ID3D12Resource* vertBuff = nullptr;
+	//ID3D12Resource* vertBuff = nullptr;
 	result = spriteCommon->GetDirectXCommon()->GetDevice()->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -42,7 +60,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	assert(SUCCEEDED(result));
 
 	//転送
-	Vertex* vertMap = nullptr;
+	//Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 	//全頂点に対して
@@ -125,7 +143,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	matWoeld = XMMatrixIdentity();
 
 	rotationZ = 0.f;
-	position={ 0.f,0.f };
+	position={ 200.0f,200.0f };
 
 	//回転
 	XMMATRIX matRot;
@@ -157,14 +175,32 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 void Sprite::Update()
 {
 	
-	vertices[LB] = { {0.0f,size.y,0.0f},{0.0f,1.0f} };//左下
-	vertices[LT] = { {0.0f,0.0f,0.0f},{0.0f,0.0f} };//左上
-	vertices[RB] = { {size.x,size.y,0.0f},{1.0f,1.0f} };//右下
-	vertices[RT] = { {size.x,0.0f,0.0f},{1.0f,0.0f} }; // 右下
-	
+	float left = (0.0f - anchorPoint.x) * size.x;
+	float right = (1.0f - anchorPoint.x) * size.x;
+	float top = (0.0f - anchorPoint.y) * size.y;
+	float bottom = (1.0f - anchorPoint.y) * size.y;
+
+	//左右反転
+	if (IsFlipX)
+	{
+		left = -left;
+		right = -right;
+	}
+	//上下反転
+	if (IsFlipY)
+	{
+		top = -top;
+		bottom = -bottom;
+	}
+
+
+	vertices[LB] = { {left,bottom,0.0f},{0.0f,1.0f} };//左下
+	vertices[LT] = { {left,top,0.0f},{0.0f,0.0f} };//左上
+	vertices[RB] = { {right,bottom,0.0f},{1.0f,1.0f} };//右下
+	vertices[RT] = { {right,top,0.0f},{1.0f,0.0f} };//右下
 
 	//転送
-	Vertex* vertMap = nullptr;
+	//Vertex* vertMap = nullptr;
 	HRESULT result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 	//全頂点に対して
@@ -203,6 +239,10 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
+	if (IsInvisble)
+	{
+		return;
+	}
 	spriteCommon->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
 
 	spriteCommon->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
