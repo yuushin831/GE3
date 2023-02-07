@@ -29,6 +29,7 @@ public://ƒƒ“ƒoŠÖ”
 
 	//Getter
 	DirectXCommon* GetDirectXCommon() { return dxCommon; }
+	ID3D12Resource* GetTextureBuffer(uint32_t index) const { return texBuff[index].Get(); }
 
 
 private://Ã“Iƒƒ“ƒo•Ï”

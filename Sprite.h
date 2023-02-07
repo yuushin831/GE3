@@ -52,6 +52,9 @@ public://ƒƒ“ƒoŠÖ”
 	const DirectX::XMFLOAT2& GetSize() const { return size; };
 	const DirectX::XMFLOAT2& GetAnchorPoint() const { return anchorPoint; };
 
+	const DirectX::XMFLOAT2& GetTextureLeftTop() const { return textureLeftTop; };
+	const DirectX::XMFLOAT2& GetTextureSize() const { return textureSize; };
+
 	const bool& GetIsFlipX()  const { return IsFlipX; }
 	const bool& GetIsFlipY()  const { return IsFlipY; }
 	const bool& GetInvisble()  const { return IsInvisble; }
@@ -65,6 +68,10 @@ public://ƒƒ“ƒoŠÖ”
 	void SetRotationZ(const float& rotationZ) { this->rotationZ = rotationZ;}
 	void SetSize(const DirectX::XMFLOAT2& size) { this->size = size; }
 	void SetAnchorPoint(const DirectX::XMFLOAT2& anchorPoint) { this->anchorPoint = anchorPoint; }
+
+	void SetTextureLeftTop(const DirectX::XMFLOAT2 LeftTop) { this->textureLeftTop = LeftTop; }
+	void SetTextureSize(const DirectX::XMFLOAT2 Size) { this->textureSize = Size; }
+
 
 	void SetIsFlipX(const bool& isFlipX) { this->IsFlipX = isFlipX; }
 	void SetIsFlipY(const bool& isFlipY) { this->IsFlipY = isFlipY; }
@@ -84,6 +91,9 @@ private:
 	DirectX::XMFLOAT2 position = { 0.0f,20.0f };
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
 	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.5f };
+
+	DirectX::XMFLOAT2 textureLeftTop = { 250.0f,0.0f };
+	DirectX::XMFLOAT2 textureSize = { 250.0f,100.0f };
 
 	bool IsFlipX = false;
 	bool IsFlipY = false;
