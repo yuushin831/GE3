@@ -4,6 +4,7 @@
 #include<cassert>
 #include<string>
 #include<DirectXTex.h>
+#include<d3dx12.h>
 
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -14,6 +15,7 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
+std::string SpriteCommon::kDefaultTextureDirectoryPath = "Resources/";
 
 void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 {
@@ -21,72 +23,14 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	assert(_dxCommon);
 	dxCommon = _dxCommon;
 
-	TexMetadata metadata{};
-	ScratchImage scratchImage{};
-	//WICテクスチャん０ロード
-	result = LoadFromWICFile(
-		L"Resources/texture.png",
-		WIC_FLAGS_NONE,
-		&metadata, scratchImage);
-	assert(SUCCEEDED(result));
-
-	ScratchImage mipChain{};
-	//みっぷマップ生成
-	result = GenerateMipMaps(
-		scratchImage.GetImages(),
-		scratchImage.GetImageCount(),
-		scratchImage.GetMetadata(),
-		TEX_FILTER_DEFAULT, 0, mipChain
-	);
-	if (SUCCEEDED(result)) {
-		scratchImage = std::move(mipChain);
-		metadata = scratchImage.GetMetadata();
-	}
-
-	metadata.format = MakeSRGB(metadata.format);
+	
 
 
-	D3D12_HEAP_PROPERTIES textureHeapProp{};
-	textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
-	textureHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-	textureHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 
-	//リソース設定
-	D3D12_RESOURCE_DESC textureResourceDesc{};
-	textureResourceDesc.Dimension =D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	textureResourceDesc.Format = metadata.format;
-	textureResourceDesc.Width = metadata.width;
-	textureResourceDesc.Height = (UINT)metadata.height;
-	textureResourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
-	textureResourceDesc.MipLevels = (UINT16)metadata.mipLevels;
-	textureResourceDesc.SampleDesc.Count = 1;
-
-	result = dxCommon->GetDevice()->CreateCommittedResource(
-		&textureHeapProp,
-		D3D12_HEAP_FLAG_NONE,
-		&textureResourceDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&texBuff));
-
-	//全みっぷマップ
-	for (size_t i = 0; i < metadata.mipLevels; i++)
-	{
-		//みっぷマップレベルを指定してイメージを取得
-		const  Image* img = scratchImage.GetImage(i, 0, 0);
-		//テクスチャバッファにデータ転送
-		result = texBuff->WriteToSubresource(
-			(UINT)i,
-			nullptr,
-			img->pixels,
-			(UINT)img->rowPitch,
-			(UINT)img->slicePitch
-		);
-		assert(SUCCEEDED(result));
-	}
+	
 
 
-	const size_t kMaxSRVCount = 2056;
+	
 
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -96,15 +40,7 @@ void SpriteCommon::Initialize(DirectXCommon* _dxCommon)
 	result = dxCommon->GetDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
 	assert(SUCCEEDED(result));
 
-	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = textureResourceDesc.Format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = textureResourceDesc.MipLevels;
-
-	dxCommon->GetDevice()->CreateShaderResourceView(texBuff.Get(), &srvDesc, srvHandle);
+	
 
 
 	//シェーダ
@@ -282,8 +218,125 @@ void SpriteCommon::PreDraw()
 
 	ID3D12DescriptorHeap* ppHeaps[] = { srvHeap.Get() };
 	dxCommon->GetCommandList()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+}
 
-	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
-	dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
+void SpriteCommon::PostDraw()
+{
+
+}
+
+void SpriteCommon::LoadTexture(uint32_t index,const std::string& fileName)
+{
+
+	std::string fullPath = kDefaultTextureDirectoryPath + fileName;
+
+	int filePathBufferSize = MultiByteToWideChar(CP_ACP, 0, fullPath.c_str(), -1, nullptr, 0);
+
+	std::vector<wchar_t> wfilePath(filePathBufferSize);
+	MultiByteToWideChar(CP_ACP, 0, fullPath.c_str(), -1, wfilePath.data(), filePathBufferSize);
+
+
+	TexMetadata metadata{};
+	ScratchImage scratchImage{};
+
+	//WICテクスチャん０ロード
+	HRESULT result = LoadFromWICFile(
+		wfilePath.data(),
+		WIC_FLAGS_NONE,
+		&metadata, scratchImage);
+	assert(SUCCEEDED(result));
+
+	ScratchImage mipChain{};
+	//みっぷマップ生成
+	result = GenerateMipMaps(
+		scratchImage.GetImages(),
+		scratchImage.GetImageCount(),
+		scratchImage.GetMetadata(),
+		TEX_FILTER_DEFAULT, 0, mipChain
+	);
+	if (SUCCEEDED(result)) {
+		scratchImage = std::move(mipChain);
+		metadata = scratchImage.GetMetadata();
+	}
+
+	metadata.format = MakeSRGB(metadata.format);
+
+
+	D3D12_HEAP_PROPERTIES textureHeapProp{};
+	textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
+	textureHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+	textureHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+
+	//リソース設定
+	D3D12_RESOURCE_DESC textureResourceDesc{};
+	textureResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureResourceDesc.Format = metadata.format;
+	textureResourceDesc.Width = metadata.width;
+	textureResourceDesc.Height = (UINT)metadata.height;
+	textureResourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
+	textureResourceDesc.MipLevels = (UINT16)metadata.mipLevels;
+	textureResourceDesc.SampleDesc.Count = 1;
+
+	result = dxCommon->GetDevice()->CreateCommittedResource(
+		&textureHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&textureResourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&texBuff[index])
+	);
+
+
+	//全みっぷマップ
+	for (size_t i = 0; i < metadata.mipLevels; i++)
+	{
+		//みっぷマップレベルを指定してイメージを取得
+		const  Image* img = scratchImage.GetImage(i, 0, 0);
+		//テクスチャバッファにデータ転送
+		result = texBuff[index]->WriteToSubresource(
+			(UINT)i,
+			nullptr,
+			img->pixels,
+			(UINT)img->rowPitch,
+			(UINT)img->slicePitch
+		);
+		assert(SUCCEEDED(result));
+	}
+
+
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = textureResourceDesc.Format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = textureResourceDesc.MipLevels;
+
+	UINT descriptorhandleIncrementSize = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	dxCommon->GetDevice()->CreateShaderResourceView
+	(
+		texBuff[index].Get(),
+		&srvDesc,
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			srvHeap->GetCPUDescriptorHandleForHeapStart(),
+			index,
+			descriptorhandleIncrementSize)
+	);
+
+
+}
+
+void SpriteCommon::SetTextureCommands(uint32_t index)
+{
+	
+
+	//D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
+	UINT descriptorhandleIncrementSize = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(
+		1,
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(
+			srvHeap->GetGPUDescriptorHandleForHeapStart(),
+			index,
+			descriptorhandleIncrementSize)
+		);
 
 }

@@ -143,7 +143,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 	matWoeld = XMMatrixIdentity();
 
 	rotationZ = 0.f;
-	position={ 200.0f,200.0f };
+	position={ 200.0f,50.0f };
 
 	//‰ñ“]
 	XMMATRIX matRot;
@@ -243,6 +243,9 @@ void Sprite::Draw()
 	{
 		return;
 	}
+
+	spriteCommon->SetTextureCommands(textureIndex);
+
 	spriteCommon->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
 
 	spriteCommon->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());

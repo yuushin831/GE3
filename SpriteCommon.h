@@ -1,6 +1,8 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
+#include<array>
+#include<string>
 
 
 #include"DirectXCommon.h"
@@ -18,8 +20,23 @@ public://ƒƒ“ƒoŠÖ”
 	void Initialize(DirectXCommon*_dxCommon);
 	//•`‰æ
 	void PreDraw();
+
+	void PostDraw();
+	
+	void LoadTexture(uint32_t index, const std::string& fileName);
+
+	void SetTextureCommands(uint32_t index);
+
 	//Getter
 	DirectXCommon* GetDirectXCommon() { return dxCommon; }
+
+
+private://Ã“Iƒƒ“ƒo•Ï”
+
+	static const size_t kMaxSRVCount = 2056;
+
+	static std::string kDefaultTextureDirectoryPath;
+
 private:
 	DirectXCommon* dxCommon;
 
@@ -30,7 +47,8 @@ private:
 	//‰æ‘œ
 	//DirectX::XMFLOAT4 imageData;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> texBuff;
+	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>,kMaxSRVCount> texBuff;
+
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap;
 

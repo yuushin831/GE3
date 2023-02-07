@@ -25,6 +25,7 @@ private:
 	};
 	//構造体
 public:
+
 	enum VertexNumber
 	{
 		LB,	//左下
@@ -32,6 +33,7 @@ public:
 		RB,	//右下
 		RT,	//右上
 	};
+
 public://メンバ関数
 	//初期化
 	void Initialize(SpriteCommon*_spriteCommon);
@@ -42,6 +44,9 @@ public://メンバ関数
 
 	//Getter
 	const DirectX::XMFLOAT4 GetColor() const { return color; }
+
+	const uint32_t GetTextureIndex() const { return textureIndex; }
+
 	const DirectX::XMFLOAT2& GetPosition() const { return position; }
 	const float& GetRotationZ() const { return rotationZ; }
 	const DirectX::XMFLOAT2& GetSize() const { return size; };
@@ -53,6 +58,8 @@ public://メンバ関数
 
 	//Setter
 	void SetColor(DirectX::XMFLOAT4 color) { this->color = color; }
+
+	void SetTextureIndex(uint32_t index) { this->textureIndex = index; }
 	
 	void SetPosition(const DirectX::XMFLOAT2& position) { this->position = position; }
 	void SetRotationZ(const float& rotationZ) { this->rotationZ = rotationZ;}
@@ -67,16 +74,16 @@ public://メンバ関数
 
 private:
 
-	
-
 	SpriteCommon* spriteCommon = nullptr;
+
+	uint32_t textureIndex = 0;
 
 	DirectX::XMFLOAT4 color = { 1,0,0,0.5f };
 
 	float rotationZ = 0.f;
-	DirectX::XMFLOAT2 position = { 50.0f,20.0f };
+	DirectX::XMFLOAT2 position = { 0.0f,20.0f };
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
-	DirectX::XMFLOAT2 anchorPoint = { 0.0f,0.0f };
+	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.5f };
 
 	bool IsFlipX = false;
 	bool IsFlipY = false;
