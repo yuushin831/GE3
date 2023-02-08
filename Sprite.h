@@ -93,7 +93,7 @@ private:
 	DirectX::XMFLOAT4 color = { 1,0,0,0.5f };
 
 	float rotationZ = 0.f;
-	DirectX::XMFLOAT2 position = { 0.0f,20.0f };
+	DirectX::XMFLOAT2 position = { 0.0f,200.0f };
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
 	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.5f };
 

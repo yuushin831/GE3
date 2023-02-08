@@ -9,7 +9,12 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex)
 	assert(_spriteCommon);
 	spriteCommon = _spriteCommon;
 
-	
+	if (textureIndex != UINT32_MAX) {
+		this->textureIndex = textureIndex;
+		AdjustTextureSize();
+
+		size = textureSize;
+	}
 
 	//UV
 	{
@@ -168,7 +173,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex)
 	matWoeld = XMMatrixIdentity();
 
 	rotationZ = 0.f;
-	position={ 200.0f,50.0f };
+	position={ 200.0f,220.0f };
 
 	//‰ñ“]
 	XMMATRIX matRot;
@@ -201,12 +206,7 @@ void Sprite::Update()
 {
 
 
-	if (textureIndex != UINT32_MAX) {
-		this->textureIndex = textureIndex;
-		AdjustTextureSize();
 
-		size = textureSize;
-	}
 
 	//UV
 	{

@@ -38,7 +38,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     //Sprite
     Sprite* sprite = nullptr;
     sprite = new Sprite();
-    sprite->Initialize(spriteCommon);
+    sprite->Initialize(spriteCommon,1);
     sprite->SetColor({ 0,1,1,1 });
     sprite->SetTextureIndex(1);
 #pragma endregion 
@@ -58,9 +58,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion 
 
 #pragma region 最初のシーンの更新
-       /* DirectX::XMFLOAT2 pos = sprite->GetPosition();
+      /*  DirectX::XMFLOAT2 pos = sprite->GetPosition();
         DirectX::XMFLOAT2 size = sprite->GetSize();
-        pos.x += 0.1f;
+        pos.y += 0.1f;
         size.y += 1.0f;
         sprite->SetPosition(pos);
         sprite->SetSize(size);*/
