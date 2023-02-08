@@ -36,7 +36,7 @@ public:
 
 public://ÉÅÉìÉoä÷êî
 	//èâä˙âª
-	void Initialize(SpriteCommon*_spriteCommon);
+	void Initialize(SpriteCommon*_spriteCommon,uint32_t textureIndex = UINT32_MAX);
 
 	void Update();
 
@@ -81,6 +81,11 @@ public://ÉÅÉìÉoä÷êî
 
 private:
 
+	void AdjustTextureSize();
+
+
+private:
+
 	SpriteCommon* spriteCommon = nullptr;
 
 	uint32_t textureIndex = 0;
@@ -92,8 +97,8 @@ private:
 	DirectX::XMFLOAT2 size = { 100.f,100.f };
 	DirectX::XMFLOAT2 anchorPoint = { 0.f,0.5f };
 
-	DirectX::XMFLOAT2 textureLeftTop = { 250.0f,0.0f };
-	DirectX::XMFLOAT2 textureSize = { 250.0f,100.0f };
+	DirectX::XMFLOAT2 textureLeftTop = { 0.0f,0.0f };
+	DirectX::XMFLOAT2 textureSize = { 100.0f,100.0f };
 
 	bool IsFlipX = false;
 	bool IsFlipY = false;

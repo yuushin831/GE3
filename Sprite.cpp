@@ -3,11 +3,13 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
-void Sprite::Initialize(SpriteCommon* _spriteCommon)
+void Sprite::Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex)
 {
 	HRESULT result{};
 	assert(_spriteCommon);
 	spriteCommon = _spriteCommon;
+
+	
 
 	//UV
 	{
@@ -198,6 +200,14 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon)
 void Sprite::Update()
 {
 
+
+	if (textureIndex != UINT32_MAX) {
+		this->textureIndex = textureIndex;
+		AdjustTextureSize();
+
+		size = textureSize;
+	}
+
 	//UV
 	{
 		ID3D12Resource* textureBuffer = spriteCommon->GetTextureBuffer(textureIndex);
@@ -222,6 +232,7 @@ void Sprite::Update()
 
 
 
+	//座標
 	{
 		float left = (0.0f - anchorPoint.x) * size.x;
 		float right = (1.0f - anchorPoint.x) * size.x;
@@ -242,11 +253,15 @@ void Sprite::Update()
 		}
 
 
-		vertices[LB] = { {left,bottom,0.0f},{0.0f,1.0f} };//左下
-		vertices[LT] = { {left,top,0.0f},{0.0f,0.0f} };//左上
-		vertices[RB] = { {right,bottom,0.0f},{1.0f,1.0f} };//右下
-		vertices[RT] = { {right,top,0.0f},{1.0f,0.0f} };//右下
+		vertices[LB].pos = { left,bottom, 0.0f };//左下
+		vertices[LT].pos = { left,top,    0.0f };//左上
+		vertices[RB].pos = { right,bottom,0.0f };//右下
+		vertices[RT].pos = { right,top,   0.0f };//右下
 	}
+
+
+
+
 	//転送
 	//Vertex* vertMap = nullptr;
 	HRESULT result = vertBuff->Map(0, nullptr, (void**)&vertMap);
@@ -304,4 +319,15 @@ void Sprite::Draw()
 	spriteCommon->GetDirectXCommon()->GetCommandList()->DrawInstanced(_countof(vertices), 1, 0, 0);
 
 
+}
+
+void Sprite::AdjustTextureSize()
+{
+	ID3D12Resource* textureBuffer = spriteCommon->GetTextureBuffer(textureIndex);
+	assert(textureBuffer);
+
+	D3D12_RESOURCE_DESC resDesc = textureBuffer->GetDesc();
+
+	textureSize.x = static_cast<float>(resDesc.Width);
+	textureSize.y = static_cast<float>(resDesc.Height);
 }
