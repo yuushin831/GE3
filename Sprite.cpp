@@ -27,7 +27,7 @@ void Sprite::Initialize(SpriteCommon* _spriteCommon, uint32_t textureIndex)
 			float tex_Left = textureLeftTop.x / resDesc.Width;
 			float tex_right = (textureLeftTop.x + textureSize.x) / resDesc.Width;
 			float tex_top = textureLeftTop.y / resDesc.Height;
-			float tex_bottom = (textureLeftTop.y + textureSize.x) / resDesc.Height;
+			float tex_bottom = (textureLeftTop.y + textureSize.y) / resDesc.Height;
 
 
 			vertices[LB].uv = { tex_Left,tex_bottom };
@@ -219,7 +219,7 @@ void Sprite::Update()
 			float tex_Left = textureLeftTop.x / resDesc.Width;
 			float tex_right = (textureLeftTop.x + textureSize.x) / resDesc.Width;
 			float tex_top = textureLeftTop.y / resDesc.Height;
-			float tex_bottom = (textureLeftTop.y + textureSize.x) / resDesc.Height;
+			float tex_bottom = (textureLeftTop.y + textureSize.y) / resDesc.Height;
 
 
 			vertices[LB].uv = { tex_Left,tex_bottom };
